@@ -9,7 +9,6 @@ import org.example.expert.domain.todo.entity.Todo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,10 +20,9 @@ import static org.example.expert.domain.todo.entity.QTodo.todo;
 import static org.example.expert.domain.user.entity.QUser.user;
 
 @RequiredArgsConstructor
-public class TodoCustomRepositoryImpl implements  TodoCustomRepository {
+public class TodoCustomRepositoryImpl implements TodoCustomRepository {
 
     private final JPAQueryFactory queryFactory;
-
 
     @Override
     public Optional<Todo> findByIdWithUser(Long todoId) {
