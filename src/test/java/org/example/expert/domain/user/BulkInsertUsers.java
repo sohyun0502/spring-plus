@@ -37,9 +37,9 @@ public class BulkInsertUsers {
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {
                     int currentId = (batchIndex * batchSize) + i;
-                    String nickname = "user_" + UUID.randomUUID().toString().substring(0, 8);
+                    String nickname = "USER_" + UUID.randomUUID().toString().substring(0, 8) + "_" + (i * batchSize);
 
-                    ps.setString(1, "test" + currentId + "@test.com");
+                    ps.setString(1, nickname + "@example.com");
                     ps.setString(2, encodedPassword);
                     ps.setString(3, "USER");
                     ps.setString(4, nickname);
