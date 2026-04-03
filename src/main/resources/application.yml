@@ -1,0 +1,48 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  datasource:
+    url: jdbc:mysql://localhost:3306/test?rewriteBatchedStatements=true
+    username: root
+    password: 12345678
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+    # AWS Region
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      s3:
+        bucket: camp-health-sohyun-files
+      credentials:
+        access-key: AKIAYUUPAGER6QKGEZAA
+        secret-key: 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
+    # 파일 업로드 크기 제한
+  servlet:
+    multipart:
+      max-file-size: 10MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    root: info                       # ✅ 전체 로그 기본 레벨 유지 (error, warn 포함)
+    org.hibernate.SQL: debug         # SQL 로그
+    org.hibernate.orm.jdbc.bind: trace  # 바인딩된 파라미터 출력
+
+jwt:
+  secret:
+    key: IfthisgetsstolenitsabigproblemIfthelengthistooshortthesecurityisnotsufficientsoanerroroccurs
