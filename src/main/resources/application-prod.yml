@@ -1,0 +1,43 @@
+spring:
+  data:
+  datasource:
+    url: jdbc:mysql://my-database.cpwme06e8lor.ap-northeast-2.rds.amazonaws.com:3306/test
+    username: admin
+    password: 12345678
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+    # AWS Region
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      s3:
+        bucket: camp-health-sohyun-files
+      credentials:
+        access-key: AKIAYUUPAGER6QKGEZAA
+        secret-key: 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
+    # 파일 업로드 크기 제한
+  servlet:
+    multipart:
+      max-file-size: 10MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    root: info
+
+jwt:
+  secret:
+    key: IfthisgetsstolenitsabigproblemIfthelengthistooshortthesecurityisnotsufficientsoanerroroccurs

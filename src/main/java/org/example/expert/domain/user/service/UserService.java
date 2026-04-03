@@ -1,16 +1,26 @@
 package org.example.expert.domain.user.service;
 
+import io.awspring.cloud.s3.S3Template;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
+import org.example.expert.domain.user.dto.response.GetProfileImageUrlResponse;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.dto.response.UserSearchResponse;
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -21,6 +31,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserCacheService userCacheService;
+    private final S3Template s3Template;
+    private static final Duration PRESIGNED_URL_EXPIRATION = Duration.ofDays(7);
+
+    @Value("${spring.cloud.aws.s3.bucket}")
+    private String bucket;
 
     public UserResponse getUser(long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new InvalidRequestException("User not found"));
@@ -69,5 +84,40 @@ public class UserService {
         userCacheService.saveUserCache(nickname, result);
 
         return result;
+    }
+
+    @Transactional
+    public void uploadProfileImage(Long id, MultipartFile file) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new InvalidRequestException("User not found"));
+
+        String key = "uploads/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+
+        try {
+            s3Template.upload(bucket, key, file.getInputStream());
+
+        } catch (IOException e) {
+            throw new InvalidRequestException("파일 업로드 실패");
+        }
+
+        user.updateProfileImageUrl(key);
+        userRepository.save(user);
+    }
+
+    public GetProfileImageUrlResponse getProfileImagePresignedUrl(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new InvalidRequestException("User not found"));
+
+
+        String key = user.getProfileImageUrl();
+        URL presignedUrl = s3Template.createSignedGetURL(bucket, key, PRESIGNED_URL_EXPIRATION);
+
+        // 만료시간 계산
+        Instant expirationTime = Instant.now().plus(PRESIGNED_URL_EXPIRATION);
+
+        return new GetProfileImageUrlResponse(
+                presignedUrl.toString(),
+                expirationTime
+        );
     }
 }
